@@ -1,0 +1,36 @@
+name:                Lottery
+version:             0.1.0.0
+synopsis:            Simulate your own lottery.
+license:             GPL-3
+license-file:        LICENSE
+author:              Tomas Vestelind
+maintainer:          tomas.vestelind@gmail.com
+category:            Game
+build-type:          Simple
+cabal-version:       >=1.10
+
+library
+  exposed-modules:     Lottery
+  build-depends:       base >=4.8 && <4.9
+                     , mtl
+  hs-source-dirs:      src
+  default-language:    Haskell2010
+  ghc-options:         -Wall
+  
+executable lottery
+  hs-source-dirs:      lottery
+  main-is:             Main.hs
+  build-depends:       base >=4.8 && <4.9
+                     , Lottery
+  default-language:    Haskell2010
+  ghc-options:         -Wall
+
+test-suite unit-test
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      tests/unit
+  main-is:             Main.hs
+  build-depends:       base >=4.8 && <4.9
+                     , Lottery
+                     , HUnit
+                     , containers
+  ghc-options:         -Wall
