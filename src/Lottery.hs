@@ -18,12 +18,14 @@ person = Person
 amount :: Int -> Amount
 amount = Amount
 
-buyTickets :: Person -> Amount -> State Lottery ()
-buyTickets p (Amount a) = modify ((replicate a p) ++)
+buyTickets :: Person -> State Lottery ()
+buyTickets p = modify ((:) p)
 
 drawTickets :: Amount -> State Lottery () -> Maybe [Person]
-drawTickets (Amount a) s = do
-    let s' = execState s []
-    if length s' >= a
-        then Just $ take a s'
-        else Nothing
+drawTickets (Amount a) s 
+    | a <= 0 = Nothing
+    | otherwise = do
+        let s' = execState s []
+        if length s' >= a
+            then Just $ take a s'
+            else Nothing
