@@ -4,18 +4,19 @@ import Lottery
 import Test.Hspec
 import Test.QuickCheck
 import Control.Monad
+import Data.List
 
 draw :: Spec
 draw = do
     describe "drawTickets" $ do
         context "with x bought ticket" $ do
-            it "draws all those tickets when x tickets are drawn" $ property $ 
-                \a -> do 
-                    let p = person "Test"
-                    let r = drawTickets (amount a) $ do
-                        replicateM_ a $ buyTickets p
-                    if (a > 0)
-                        then r `shouldBe` (Just (replicate a p))
+            it "draws exactly those tickets when x tickets are drawn" $ property $ 
+                \ps -> do 
+                    let ps' = map person ps
+                    let r   = drawTickets (amount $ length ps) $ do
+                        mapM_ buyTickets ps'
+                    if (length ps > 0)
+                        then (sort <$> r) `shouldBe` (Just $ sort ps')
                         else r `shouldBe` Nothing
         it "returns Nothing when 0 tickets are drawn" $ do
             let r = drawTickets (amount 0) $ buyTickets $ person "Test" 
