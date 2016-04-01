@@ -13,15 +13,15 @@ library
   exposed-modules:     Lottery
   build-depends:       base >=4.8 && <4.9
                      , mtl
-  hs-source-dirs:      src
+  hs-source-dirs:      lib
   default-language:    Haskell2010
   ghc-options:         -Wall
   
 executable lottery
-  hs-source-dirs:      lottery
   main-is:             Main.hs
   build-depends:       base >=4.8 && <4.9
                      , Lottery
+  hs-source-dirs:      cli
   default-language:    Haskell2010
   ghc-options:         -Wall
 
