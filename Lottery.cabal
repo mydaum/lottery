@@ -33,4 +33,5 @@ test-suite tests
                      , Lottery
                      , QuickCheck
                      , hspec
+  default-language:    Haskell2010
   ghc-options:         -Wall
