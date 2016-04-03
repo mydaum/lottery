@@ -1,6 +1,6 @@
 module Main where
 
-import Lottery 
+import Lottery
 import Test.Hspec
 import Test.QuickCheck
 import Control.Monad
@@ -10,8 +10,8 @@ draw :: Spec
 draw = do
     describe "drawTickets" $ do
         context "with x bought ticket" $ do
-            it "draws exactly those tickets when x tickets are drawn" $ property $ 
-                \ps -> do 
+            it "draws exactly those tickets when x tickets are drawn" $ property $
+                \ps -> do
                     let ps' = map person ps
                     let r   = drawTickets (amount $ length ps) $ do
                             mapM_ buyTickets ps'
@@ -19,7 +19,7 @@ draw = do
                         then (sort <$> r) `shouldBe` (Just $ sort ps')
                         else r `shouldBe` Nothing
         it "returns Nothing when 0 tickets are drawn" $ do
-            let r = drawTickets (amount 0) $ buyTickets $ person "Test" 
+            let r = drawTickets (amount 0) $ buyTickets $ person "Test"
             r `shouldBe` Nothing
         it "returns Nothing when tickets drawn > ticket bought" $ property $
             \a -> do
