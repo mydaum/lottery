@@ -14,7 +14,7 @@ draw = do
                 \ps -> do 
                     let ps' = map person ps
                     let r   = drawTickets (amount $ length ps) $ do
-                        mapM_ buyTickets ps'
+                            mapM_ buyTickets ps'
                     if (length ps > 0)
                         then (sort <$> r) `shouldBe` (Just $ sort ps')
                         else r `shouldBe` Nothing
@@ -24,7 +24,7 @@ draw = do
         it "returns Nothing when tickets drawn > ticket bought" $ property $
             \a -> do
                 let r = drawTickets (amount (a+1)) $ do
-                    replicateM_ a $ buyTickets $ person "Test"
+                        replicateM_ a $ buyTickets $ person "Test"
                 r `shouldBe` Nothing
 
 lottery :: Spec
