@@ -1,3 +1,5 @@
+{-# LANGUAGE TemplateHaskell #-}
+
 module Main where
 
 import Test.Hspec
@@ -7,11 +9,6 @@ import Data.List
 import qualified Data.Text as T
 
 import Lottery
-
-instance Arbitrary Person where
-    arbitrary = do
-        s <- arbitrary
-        return $ Person $ T.pack s 
 
 draw :: Spec
 draw = do
@@ -42,9 +39,7 @@ draw = do
                 let len = length ps
                 let res = runLottery $ do
                         mapM_ buyTicket (ps :: [Person])
-                        case refine len of
-                            Right x -> drawTickets (Amount x)
-                            Left _  -> error "cannot happen as length is always >= 0"
+                        drawTickets (Amount $$(refineTH 0))
                 res `shouldBe` (Right [])
 
 lottery :: Spec
