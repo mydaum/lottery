@@ -1,31 +1,46 @@
+{-# LANGUAGE TemplateHaskell #-}
+
 module Main where
 
-import Lottery
 import Test.Hspec
 import Test.QuickCheck
-import Control.Monad
+import Refined
 import Data.List
+import qualified Data.Text as T
+
+import Lottery
 
 draw :: Spec
 draw = do
     describe "drawTickets" $ do
-        context "with x bought ticket" $ do
-            it "draws exactly those tickets when x tickets are drawn" $ property $
+        context "with x bought tickets" $ do
+            it "draws exactly x winner when x tickets are drawn" $ property $
                 \ps -> do
-                    let ps' = map person ps
-                    let r   = drawTickets (amount $ length ps) $ do
-                            mapM_ buyTickets ps'
-                    if (length ps > 0)
-                        then (sort <$> r) `shouldBe` (Just $ sort ps')
-                        else r `shouldBe` Nothing
-        it "returns Nothing when 0 tickets are drawn" $ do
-            let r = drawTickets (amount 0) $ buyTickets $ person "Test"
-            r `shouldBe` Nothing
-        it "returns Nothing when tickets drawn > ticket bought" $ property $
-            \a -> do
-                let r = drawTickets (amount (a+1)) $ do
-                        replicateM_ a $ buyTickets $ person "Test"
-                r `shouldBe` Nothing
+                    let len = length ps
+                    let res = runLottery $ do
+                            mapM_ buyTicket (ps :: [Person])
+                            case refine len of
+                                Right x -> drawTickets (Amount x)
+                                Left _  -> error "cannot happen as length is always >= 0"
+                    case len of
+                        0 -> res `shouldBe` (Right [])
+                        _ -> (sort <$> res) `shouldBe` (Right $ sort ps)
+            it "returns Left with error message when drawing x+1 tickets" $ property $
+                \ps -> do
+                    let len = length ps
+                    let res = runLottery $ do
+                            mapM_ buyTicket (ps :: [Person])
+                            case refine (len+1) of
+                                Right x -> drawTickets (Amount x)
+                                Left _  -> error "cannot happen as length is always >= 0"
+                    res `shouldBe` (Left $ Error $ T.pack "Cannot draw more tickets than there are in the Lottery")
+        it "returns no winners when 0 tickets are drawn" $ property $ do
+            \ps -> do
+                let len = length ps
+                let res = runLottery $ do
+                        mapM_ buyTicket (ps :: [Person])
+                        drawTickets (Amount $$(refineTH 0))
+                res `shouldBe` (Right [])
 
 lottery :: Spec
 lottery = describe "lottery" draw

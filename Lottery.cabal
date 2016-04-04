@@ -13,10 +13,13 @@ library
   exposed-modules:     Lottery
   build-depends:       base >=4.8 && <4.9
                      , mtl
+                     , text
+                     , refined
+                     , QuickCheck
   hs-source-dirs:      src
   default-language:    Haskell2010
   ghc-options:         -Wall
-  
+
 executable lottery
   main-is:             Main.hs
   build-depends:       base >=4.8 && <4.9
@@ -33,5 +36,7 @@ test-suite unit
                      , Lottery
                      , QuickCheck
                      , hspec
+                     , refined
+                     , text
   default-language:    Haskell2010
   ghc-options:         -Wall
