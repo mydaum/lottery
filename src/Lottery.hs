@@ -1,31 +1,37 @@
 module Lottery (
-    person, amount,
-    buyTickets, drawTickets
+    Error(..), Amount(..), Person(..),
+    buyTicket, drawTickets, runLottery
 ) where
 
-import Control.Monad.State
+import Control.Monad.State.Lazy
+import Refined
+import qualified Data.Text as T
+import qualified Data.List as L
+import qualified Data.Foldable as F
+
+newtype Error = Error T.Text deriving (Eq, Show)
+newtype Person = Person T.Text deriving (Eq, Show, Ord)
+newtype Amount = Amount (Refined NonNegative Int) deriving (Eq, Show, Ord)
 
 -- Internal types
-type Lottery = [Person]
+type Lottery = State [Person]
 
--- Exported types
-newtype Person = Person String deriving (Eq, Show, Ord)
-newtype Amount = Amount Int
+runLottery :: Lottery a -> a
+runLottery s = evalState s []
 
-person :: String -> Person
-person = Person
+buyTicket :: Person -> Lottery ()
+buyTicket p = modify (p:)
 
-amount :: Int -> Amount
-amount = Amount
-
-buyTickets :: Person -> State Lottery ()
-buyTickets p = modify ((:) p)
-
-drawTickets :: Amount -> State Lottery () -> Maybe [Person]
-drawTickets (Amount a) s 
-    | a <= 0 = Nothing
+drawTickets :: Amount -> Lottery (Either Error [Person])
+drawTickets (Amount a)
+    | am == 0   = return $ Right []
     | otherwise = do
-        let s' = execState s []
-        if length s' >= a
-            then Just $ take a s'
-            else Nothing
+        len <- gets F.length
+        case len >= am of
+            True -> do
+                ps <- gets $ L.take am
+                modify $ L.drop am
+                return $ Right ps
+            False -> return $ Left $ Error $ T.pack errStr
+    where errStr = "Cannot draw more tickets than there are in the Lottery"
+          am = unrefine a
