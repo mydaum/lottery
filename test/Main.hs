@@ -17,7 +17,7 @@ draw = do
             it "draws exactly x winner when x tickets are drawn" $ property $
                 \ps -> do
                     let len = length ps
-                    let res = runLottery $ do
+                    let res = runLottery (Seed 0) $ do
                             mapM_ buyTicket (ps :: [Person])
                             case refine len of
                                 Right x -> drawTickets (Amount x)
@@ -28,7 +28,7 @@ draw = do
             it "returns Left with error message when drawing x+1 tickets" $ property $
                 \ps -> do
                     let len = length ps
-                    let res = runLottery $ do
+                    let res = runLottery (Seed 0) $ do
                             mapM_ buyTicket (ps :: [Person])
                             case refine (len+1) of
                                 Right x -> drawTickets (Amount x)
@@ -37,10 +37,21 @@ draw = do
         it "returns no winners when 0 tickets are drawn" $ property $ do
             \ps -> do
                 let len = length ps
-                let res = runLottery $ do
+                let res = runLottery (Seed 0) $ do
                         mapM_ buyTicket (ps :: [Person])
                         drawTickets (Amount $$(refineTH 0))
                 res `shouldBe` (Right [])
+        it "returns different tickets with different seeds" $ do
+            let ps = [Person $ T.pack "a", Person $ T.pack "b", Person $ T.pack "c"]
+            let res1 = runLottery (Seed 0) $ do
+                        mapM_ buyTicket ps
+                        drawTickets (Amount $$(refineTH 2))
+            let res2 = runLottery (Seed 4) $ do
+                        mapM_ buyTicket ps
+                        drawTickets (Amount $$(refineTH 2))
+            print res1
+            print res2
+            res1 `shouldNotBe` res2
 
 lottery :: Spec
 lottery = describe "lottery" draw
