@@ -8,7 +8,6 @@ import Refined
 import Test.QuickCheck.Arbitrary
 import System.Random
 import qualified Data.Text as T
-import qualified Data.List as L
 import qualified Data.Foldable as F
 
 newtype Error = Error T.Text deriving (Eq, Show)
@@ -46,8 +45,8 @@ drawTickets (Amount a)
                 person <- takeAndRemoveRandomPerson
                 case refine (wanted-1) of
                     Right x -> do
-                        next <- drawTickets (Amount x)
-                        case next of
+                        nextPerson <- drawTickets (Amount x)
+                        case nextPerson of
                             Right rest -> return $ Right (person:rest)
                             Left l     -> return $ Left l
                     Left _ -> return $ Left $ Error $ T.pack refineErr
