@@ -21,21 +21,20 @@ instance Arbitrary Person where
         return $ Person $ T.pack s
 
 -- Internal types
-type Lottery = State Internal
-data Internal = Internal
-    {
+type Lottery g = State (Internal g)
+data Internal g = Internal {
       tickets :: [Person]
-    , rng     :: StdGen
+    , rng     :: g
     }
 
 
-runLottery :: Seed -> Lottery a -> a
-runLottery (Seed n) s = evalState s $ Internal { tickets = [], rng = mkStdGen n }
+runLottery :: RandomGen g => g -> Lottery g a -> a
+runLottery g s = evalState s $ Internal { tickets = [], rng = g }
 
-buyTicket :: Person -> Lottery ()
+buyTicket :: RandomGen g => Person -> Lottery g ()
 buyTicket p = modify $ modifyTickets (p:)
 
-drawTickets :: Amount -> Lottery (Either Error [Person])
+drawTickets :: RandomGen g => Amount -> Lottery g (Either Error [Person])
 drawTickets (Amount a)
     | wanted == 0 = return $ Right []
     | otherwise = do
@@ -55,39 +54,39 @@ drawTickets (Amount a)
           refineErr  = "Tried to convert negative to natural number"
           wanted     = unrefine a
 
-modifyTickets :: ([Person] -> [Person]) -> Internal -> Internal
+modifyTickets :: RandomGen g => ([Person] -> [Person]) -> Internal g -> Internal g
 modifyTickets f i = i { tickets = f $ tickets i }
 
-modifyRng :: (StdGen -> StdGen) -> Internal -> Internal
-modifyRng f i = i { rng = f $ rng i }
+modifyRng :: RandomGen g => (g -> g) -> Internal g -> Internal g
+modifyRng f i@(Internal { rng = r }) = i { rng = (f r) }
 
-availableTickets :: Lottery Int
+availableTickets :: RandomGen g => Lottery g Int
 availableTickets = gets $ F.length . tickets
 
-takeAndRemoveRandomPerson :: Lottery Person
+takeAndRemoveRandomPerson :: RandomGen g => Lottery g Person
 takeAndRemoveRandomPerson = do
     ran <- getRandomAndUpdateRng
     person <- getPersonAtIndex ran
     removeTicketAtIndex ran
     return person
 
-getRandomAndUpdateRng :: Lottery Int
+getRandomAndUpdateRng :: RandomGen g => Lottery g Int
 getRandomAndUpdateRng = do
     available <- availableTickets
     (ran, newGen) <- gets $ randomR (0, available-1) . rng
     newRng newGen
     return ran
 
-getPersonAtIndex :: Int -> Lottery Person
+getPersonAtIndex :: RandomGen g => Int -> Lottery g Person
 getPersonAtIndex i = gets $ (!!i) . tickets
 
-removeTicketAtIndex :: Int -> Lottery ()
+removeTicketAtIndex :: RandomGen g => Int -> Lottery g ()
 removeTicketAtIndex i = do
     (h, t) <- gets $ splitAt i . tickets
     newTickets $ h ++ (tail t)
 
-newTickets :: [Person] -> Lottery ()
+newTickets :: RandomGen g => [Person] -> Lottery g ()
 newTickets ts = modify $ modifyTickets (\_ -> ts)
 
-newRng :: StdGen -> Lottery ()
+newRng :: RandomGen g => g -> Lottery g ()
 newRng newGen = modify $ modifyRng (\_ -> newGen)
