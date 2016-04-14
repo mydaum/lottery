@@ -6,6 +6,7 @@ import Test.Hspec
 import Test.QuickCheck
 import Refined
 import Data.List
+import Control.Monad
 import qualified Data.Text as T
 
 import Lottery
@@ -41,6 +42,20 @@ draw = do
                         mapM_ buyTicket (ps :: [Person])
                         drawTickets (Amount $$(refineTH 0))
                 res `shouldBe` (Right [])
+        it "returns the same tickets when drawing all at once or one at a time" $ property $ do
+            \ps -> do
+                let len = length ps
+                let res1 = runLottery $ do
+                        mapM_ buyTicket (ps :: [Person])
+                        case refine len of
+                            Right x -> drawTickets (Amount x)
+                            Left _  -> error "cannot happen as length is always >= 0"
+                let res2 = runLottery $ do
+                        mapM_ buyTicket (ps :: [Person])
+                        replicateM len $ do
+                            l <- drawTickets (Amount $$(refineTH 1))
+                            return $ head `fmap` l
+                res1 `shouldBe` (sequence res2)
 
 lottery :: Spec
 lottery = describe "lottery" draw
