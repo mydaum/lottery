@@ -1,9 +1,9 @@
 # For more information, see: http://docs.haskellstack.org/en/stable/yaml_configuration.html
 
-resolver: lts-7.11
+resolver: lts-7.15
 packages:
 - '.'
 extra-deps:
-- refined-0.1.2
+- refined-0.1.2.1
 flags: {}
 extra-package-dbs: []
