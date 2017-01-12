@@ -1,6 +1,6 @@
 # For more information, see: http://docs.haskellstack.org/en/stable/yaml_configuration.html
 
-resolver: lts-5.10
+resolver: lts-7.11
 packages:
 - '.'
 extra-deps:
