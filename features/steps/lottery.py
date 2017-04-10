@@ -1,21 +1,6 @@
-from behave import given
+import behave as b
 import subprocess as sp
 import unirest as uni
-
-
-def before_scenario(context, scenario):
-    context.daemons = []
-    context.lottery = None
-
-
-def after_scenario(context, scenario):
-    for d in context.daemons:
-        d.terminate()
-        try:
-            d.wait(60)
-        except sp.TimeoutExpired:
-            d.kill()
-            d.wait(60)
 
 
 class Lottery:
@@ -28,47 +13,47 @@ class Lottery:
         return self._port
 
 
-@given('that I have started lottery')
-def step_impl(context):
+@b.given('that I have started lottery')
+def step_start_application(context):
     port = 8888
     with sp.Popen(['lottery', '--port {}'.format(port)]) as proc:
         context.daemons.append(proc)
         context.lottery = Lottery(port=port)
 
 
-@given('I create a lottery')
-def step_impl(context, name):
+@b.when('I create a lottery')
+def step_create_lottery(context, name):
     port = context.lottery.port
     r = uni.post('http://localhost:{}/api/1/lottery/create'.format(port))
     context.response = r
 
 
-@given('I get a (?P<code>\d+) response code')
-def step_impl(context, code):
+@b.then('I get a (?P<code>\d+) response code')
+def step_get_response_code(context, code):
     assert context.reponse.code == code
     if code == 204:
         assert len(context.reponse.body) == 0
 
 
-@given('I get a URL')
-def step_impl(context):
+@b.then('I get a URL')
+def step_get_url(context):
     assert 'url' in context.response.body
 
 
-@given('I get a deletion token')
-def step_impl(context):
+@b.then('I get a deletion token')
+def step_deletion_token(context):
     assert 'deletion_token' in context.response.body
 
 
-@given('a lottery has been created')
-def step_impl(context, id):
+@b.given('that a lottery has been created')
+def step_lottery_has_been_created(context, id):
     context.exectute_steps('''
         I create a lottery
     ''')
 
 
-@given('I delete a lottery')
-def step_impl(context, name):
+@b.when('I delete that lottery')
+def step_delete_lottery(context, name):
     port = context.lottery.port
     url = context.response.body['url']
     deletion_token = context.response.body['deletion_token']
@@ -77,9 +62,26 @@ def step_impl(context, name):
     context.response = r
 
 
-@given('I delete a non-existing lottery')
-def step_impl(context, name):
+@b.when('I delete that lottery using a bad token')
+def step_delete_lottery_with_bad_token(context, name):
+    port = context.lottery.port
+    url = context.response.body['url']
+    r = uni.delete(url='http://localhost:{}/{}'.format(port, url),
+                   params={'deletion_token': 'bad_token'})
+    context.response = r
+
+
+@b.when('I delete a non-existing lottery')
+def step_delete_non_existing_lottery(context, name):
     port = context.lottery.port
     r = uni.delete(url='http://localhost:{}/non-existing-lottery'.format(port),
                    params={'deletion_token': 'test_token'})
+    context.response = r
+
+
+@b.when('I delete a non-existing lottery using a bad token')
+def step_delete_non_existing_lottery_with_bad_token(context, name):
+    port = context.lottery.port
+    r = uni.delete(url='http://localhost:{}/non-existing-lottery'.format(port),
+                   params={'deletion_token': 'bad_token'})
     context.response = r
