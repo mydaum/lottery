@@ -1,6 +1,6 @@
 module Lottery (
     Error(..), Amount(..), Person(..), Seed(..),
-    buyTicket, drawTickets, runLottery
+    buyTicket, buyTickets, drawTickets, runLottery
 ) where
 
 import Control.Monad.State.Lazy
@@ -33,6 +33,9 @@ runLottery g s = evalState s $ Internal { tickets = [], rng = g }
 
 buyTicket :: RandomGen g => Person -> Lottery g ()
 buyTicket p = modify $ modifyTickets (p:)
+
+buyTickets :: RandomGen g => [Person] -> Lottery g ()
+buyTickets = mapM_ buyTicket
 
 drawTickets :: RandomGen g => Amount -> Lottery g (Either Error [Person])
 drawTickets (Amount a)

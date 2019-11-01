@@ -57,3 +57,4 @@ tests:
     - refined
     - text
     - random
+    - either-unwrap

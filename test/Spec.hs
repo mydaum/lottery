@@ -2,12 +2,13 @@
 
 module Main where
 
+import Control.Monad
+import Data.Either.Unwrap
+import Data.List
+import Refined
+import System.Random
 import Test.Hspec
 import Test.QuickCheck
-import Refined
-import Data.List
-import System.Random
-import Control.Monad
 import qualified Data.Text as T
 
 import Lottery
@@ -20,10 +21,8 @@ draw = do
                 \ps -> do
                     let len = length ps
                     let res = runLottery (mkStdGen 0) $ do
-                            mapM_ buyTicket (ps :: [Person])
-                            case refine len of
-                                Right x -> drawTickets (Amount x)
-                                Left _  -> error "cannot happen as length is always >= 0"
+                            buyTickets ps
+                            drawTickets (Amount $ fromRight $ refine len)
                     case len of
                         0 -> res `shouldBe` (Right [])
                         _ -> (sort <$> res) `shouldBe` (Right $ sort ps)
