@@ -30,6 +30,7 @@ library:
   - refined
   - QuickCheck
   - random
+  - containers
 
 executables:
   lottery-cli:
