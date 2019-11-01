@@ -32,15 +32,16 @@ library:
   - random
 
 executables:
-  lottery-exe:
+  lottery-cli:
     main: Main.hs
-    source-dirs: app
+    source-dirs: app/cli
     ghc-options:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
     - lottery
+    - optparse-applicative
 
 tests:
   lottery-test:
