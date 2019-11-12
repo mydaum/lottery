@@ -1,4 +1,4 @@
-module Lottery2 where
+module Models.Lottery where
 
 import qualified Data.Map.Strict as Map
 import Refined
@@ -7,12 +7,15 @@ import System.Random
 newtype Amount = Amount (Refined NonNegative Int) deriving (Eq, Show, Ord)
 
 type Name = String
+type TicketNumber = Integer
+data TicketHolder = TicketHolder
+    { name :: String
+    } deriving Show
 
-data (Ord a, RandomGen g) => Lottery a g = Lottery
-    { lotteryTickets :: Map.Map a Amount
-    , lotteryRng     :: g
+data Lottery = Lottery
+    { lotteryTickets :: Map.Map TicketNumber TicketHolder
     , lotteryName    :: Name
     } deriving (Show)
 
-new :: (Ord a, RandomGen g) => g -> Name -> Lottery a g
+new :: Name -> Lottery
 new = Lottery Map.empty

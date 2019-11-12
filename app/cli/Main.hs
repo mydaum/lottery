@@ -1,8 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 import Options.Applicative
-import Lottery2
-import System.Random
+import UseCases.ReadLottery
 
 newtype Options = Options
     { optCommand :: Command
@@ -17,7 +16,7 @@ main :: IO ()
 main = do
     (Options optCommand) <- execParser optionsParserInfo
     case optCommand of
-        Show _ -> print predefinedLottery
+        Show _ -> print getLottery
 
 optionsParserInfo :: ParserInfo Options
 optionsParserInfo = info (optionParser <**> helper)
@@ -30,6 +29,3 @@ optionsParserInfo = info (optionParser <**> helper)
                 ( command "show" (info show (progDesc "Show details of the lottery"))
                 )
                 where show = Show <$> pure ShowOptions
-
-predefinedLottery :: Lottery String StdGen
-predefinedLottery = new (mkStdGen 0) "Test lottery"
