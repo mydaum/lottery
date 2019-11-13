@@ -31,6 +31,7 @@ library:
   - QuickCheck
   - random
   - containers
+  - extra
 
 executables:
   lottery-cli:
